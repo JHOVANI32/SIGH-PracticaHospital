@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SIGH_PracticaHospital.Data;
 using SIGH_PracticaHospital.Models;
@@ -17,9 +18,48 @@ namespace SIGH_PracticaHospital.Controllers
         }
 
         // GET: Pacientes
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, string genero, string estado)
         {
-            return View(await _context.Pacientes.ToListAsync());
+            // Comienza con todos los pacientes
+            var pacientes = from p in _context.Pacientes select p;
+
+            // Filtro de búsqueda por nombre o cédula
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                pacientes = pacientes.Where(p => 
+                    p.Nombre.Contains(searchString) || 
+                    p.Apellido.Contains(searchString) || 
+                    p.Cedula.Contains(searchString));
+            }
+
+            // Filtro por género
+            if (!string.IsNullOrEmpty(genero) && genero != "")
+            {
+                pacientes = pacientes.Where(p => p.Genero == genero);
+            }
+
+            // Filtro por estado
+            if (!string.IsNullOrEmpty(estado) && estado != "")
+            {
+                if (estado == "Activo")
+                {
+                    pacientes = pacientes.Where(p => p.Activo);
+                }
+                else if (estado == "Inactivo")
+                {
+                    pacientes = pacientes.Where(p => !p.Activo);
+                }
+            }
+
+            // Ordenar por nombre
+            var pacientesOrdenados = await pacientes.OrderBy(p => p.Nombre).ToListAsync();
+
+            // Pasar valores de filtro a la vista
+            ViewBag.SearchString = searchString;
+            ViewBag.Genero = genero;
+            ViewBag.Estado = estado;
+
+            return View(pacientesOrdenados);
         }
 
         // GET: Pacientes/Details/5
@@ -58,9 +98,26 @@ namespace SIGH_PracticaHospital.Controllers
             {
                 try
                 {
+                    // Validar que la cédula sea única
+                    var cedulaExistente = await _context.Pacientes
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(p => p.Cedula == paciente.Cedula);
+
+                    if (cedulaExistente != null)
+                    {
+                        ModelState.AddModelError("Cedula", "La cédula ya está registrada en el sistema.");
+                        return View(paciente);
+                    }
+
                     _context.Add(paciente);
                     await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Paciente creado: {paciente.Nombre} {paciente.Apellido} (Cédula: {paciente.Cedula})");
                     return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateException ex)
+                {
+                    _logger.LogError(ex, "Error en base de datos al crear paciente");
+                    ModelState.AddModelError("", "Error al crear el paciente. Es posible que la cédula ya esté registrada.");
                 }
                 catch (Exception ex)
                 {
@@ -101,8 +158,20 @@ namespace SIGH_PracticaHospital.Controllers
             {
                 try
                 {
+                    // Validar que la cédula sea única (excepto la del paciente actual)
+                    var cedulaExistente = await _context.Pacientes
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(p => p.Cedula == paciente.Cedula && p.PacienteId != id);
+
+                    if (cedulaExistente != null)
+                    {
+                        ModelState.AddModelError("Cedula", "La cédula ya está registrada en el sistema.");
+                        return View(paciente);
+                    }
+
                     _context.Update(paciente);
                     await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Paciente actualizado: {paciente.Nombre} {paciente.Apellido} (ID: {id})");
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException ex)
@@ -116,6 +185,11 @@ namespace SIGH_PracticaHospital.Controllers
                     {
                         throw;
                     }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error updating paciente");
+                    ModelState.AddModelError("", "Error al actualizar el paciente. Por favor intente de nuevo.");
                 }
             }
             return View(paciente);

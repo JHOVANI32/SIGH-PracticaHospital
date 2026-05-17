@@ -18,12 +18,55 @@ namespace SIGH_PracticaHospital.Controllers
         }
 
         // GET: Medicos
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, int? especialidadId, string estado)
         {
-            var medicos = await _context.Medicos
-                .Include(m => m.Especialidad)
+            // Comienza con todos los médicos incluyendo especialidad
+            var medicos = _context.Medicos.Include(m => m.Especialidad).AsQueryable();
+
+            // Filtro de búsqueda por nombre o cédula profesional
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                medicos = medicos.Where(m => 
+                    m.Nombre.Contains(searchString) || 
+                    m.Apellido.Contains(searchString) || 
+                    m.CedulaProfesional.Contains(searchString));
+            }
+
+            // Filtro por especialidad
+            if (especialidadId.HasValue && especialidadId.Value > 0)
+            {
+                medicos = medicos.Where(m => m.EspecialidadId == especialidadId.Value);
+            }
+
+            // Filtro por estado
+            if (!string.IsNullOrEmpty(estado) && estado != "")
+            {
+                if (estado == "Activo")
+                {
+                    medicos = medicos.Where(m => m.Activo);
+                }
+                else if (estado == "Inactivo")
+                {
+                    medicos = medicos.Where(m => !m.Activo);
+                }
+            }
+
+            // Ordenar por nombre
+            var medicosOrdenados = await medicos.OrderBy(m => m.Nombre).ToListAsync();
+
+            // Obtener lista de especialidades para dropdown
+            var especialidades = await _context.Especialidades
+                .Where(e => e.Activa)
+                .OrderBy(e => e.Nombre)
                 .ToListAsync();
-            return View(medicos);
+
+            // Pasar valores de filtro a la vista
+            ViewBag.SearchString = searchString;
+            ViewBag.EspecialidadId = especialidadId;
+            ViewBag.Estado = estado;
+            ViewBag.Especialidades = especialidades;
+
+            return View(medicosOrdenados);
         }
 
         // GET: Medicos/Details/5
@@ -51,7 +94,9 @@ namespace SIGH_PracticaHospital.Controllers
         // GET: Medicos/Create
         public IActionResult Create()
         {
-            ViewData["EspecialidadId"] = new SelectList(_context.Especialidades, "EspecialidadId", "Nombre");
+            ViewData["EspecialidadId"] = new SelectList(
+                _context.Especialidades.Where(e => e.Activa).OrderBy(e => e.Nombre),
+                "EspecialidadId", "Nombre");
             return View();
         }
 
@@ -64,9 +109,29 @@ namespace SIGH_PracticaHospital.Controllers
             {
                 try
                 {
+                    // Validar que la cédula profesional sea única
+                    var cedulaExistente = await _context.Medicos
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(m => m.CedulaProfesional == medico.CedulaProfesional);
+
+                    if (cedulaExistente != null)
+                    {
+                        ModelState.AddModelError("CedulaProfesional", "La cédula profesional ya está registrada en el sistema.");
+                        ViewData["EspecialidadId"] = new SelectList(
+                            _context.Especialidades.Where(e => e.Activa),
+                            "EspecialidadId", "Nombre", medico.EspecialidadId);
+                        return View(medico);
+                    }
+
                     _context.Add(medico);
                     await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Médico creado: {medico.Nombre} {medico.Apellido} (Cédula: {medico.CedulaProfesional})");
                     return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateException ex)
+                {
+                    _logger.LogError(ex, "Error en base de datos al crear médico");
+                    ModelState.AddModelError("", "Error al crear el médico. Es posible que la cédula profesional ya esté registrada.");
                 }
                 catch (Exception ex)
                 {
@@ -74,7 +139,9 @@ namespace SIGH_PracticaHospital.Controllers
                     ModelState.AddModelError("", "Error al crear el médico. Por favor intente de nuevo.");
                 }
             }
-            ViewData["EspecialidadId"] = new SelectList(_context.Especialidades, "EspecialidadId", "Nombre", medico.EspecialidadId);
+            ViewData["EspecialidadId"] = new SelectList(
+                _context.Especialidades.Where(e => e.Activa),
+                "EspecialidadId", "Nombre", medico.EspecialidadId);
             return View(medico);
         }
 
@@ -91,7 +158,9 @@ namespace SIGH_PracticaHospital.Controllers
             {
                 return NotFound();
             }
-            ViewData["EspecialidadId"] = new SelectList(_context.Especialidades, "EspecialidadId", "Nombre", medico.EspecialidadId);
+            ViewData["EspecialidadId"] = new SelectList(
+                _context.Especialidades.Where(e => e.Activa),
+                "EspecialidadId", "Nombre", medico.EspecialidadId);
             return View(medico);
         }
 
@@ -109,8 +178,23 @@ namespace SIGH_PracticaHospital.Controllers
             {
                 try
                 {
+                    // Validar que la cédula profesional sea única (excepto la del médico actual)
+                    var cedulaExistente = await _context.Medicos
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(m => m.CedulaProfesional == medico.CedulaProfesional && m.MedicoId != id);
+
+                    if (cedulaExistente != null)
+                    {
+                        ModelState.AddModelError("CedulaProfesional", "La cédula profesional ya está registrada en el sistema.");
+                        ViewData["EspecialidadId"] = new SelectList(
+                            _context.Especialidades.Where(e => e.Activa),
+                            "EspecialidadId", "Nombre", medico.EspecialidadId);
+                        return View(medico);
+                    }
+
                     _context.Update(medico);
                     await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Médico actualizado: {medico.Nombre} {medico.Apellido} (ID: {id})");
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException ex)
@@ -125,8 +209,15 @@ namespace SIGH_PracticaHospital.Controllers
                         throw;
                     }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error updating medico");
+                    ModelState.AddModelError("", "Error al actualizar el médico. Por favor intente de nuevo.");
+                }
             }
-            ViewData["EspecialidadId"] = new SelectList(_context.Especialidades, "EspecialidadId", "Nombre", medico.EspecialidadId);
+            ViewData["EspecialidadId"] = new SelectList(
+                _context.Especialidades.Where(e => e.Activa),
+                "EspecialidadId", "Nombre", medico.EspecialidadId);
             return View(medico);
         }
 
