@@ -1,0 +1,150 @@
+@model IEnumerable<SIGH_PracticaHospital.Models.Paciente>
+
+@{
+    ViewData["Title"] = "Gestión de Pacientes";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1><i class="bi bi-person-badge"></i> Pacientes</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Pacientes</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/Pacientes/Create" class="btn btn-primary btn-action">
+                <i class="bi bi-plus-circle"></i> Nuevo Paciente
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="filter-section">
+    <h5><i class="bi bi-funnel"></i> Búsqueda y Filtros</h5>
+    <form method="get" action="/Pacientes/Index" class="row g-3">
+        <div class="col-md-4">
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" name="searchString" class="form-control" placeholder="Buscar por nombre o cédula..." value="@ViewBag.SearchString" />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="genero" class="form-select">
+                <option value="">-- Todos los géneros --</option>
+                <option value="Masculino" selected="@(ViewBag.Genero == "Masculino")">Masculino</option>
+                <option value="Femenino" selected="@(ViewBag.Genero == "Femenino")">Femenino</option>
+                <option value="Otro" selected="@(ViewBag.Genero == "Otro")">Otro</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="estado" class="form-select">
+                <option value="">-- Todos los estados --</option>
+                <option value="Activo" selected="@(ViewBag.Estado == "Activo")">Activos</option>
+                <option value="Inactivo" selected="@(ViewBag.Estado == "Inactivo")">Inactivos</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-search"></i> Buscar
+            </button>
+        </div>
+    </form>
+</div>
+
+@if (Model.Count() == 0)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="bi bi-info-circle"></i>
+        <strong>Sin resultados.</strong> No se encontraron pacientes con los criterios de búsqueda.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            <span class="badge bg-light text-dark">Total: @Model.Count() paciente(s)</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>
+                            <i class="bi bi-person-badge"></i> Nombre
+                        </th>
+                        <th>
+                            <i class="bi bi-card-text"></i> Cédula
+                        </th>
+                        <th>
+                            <i class="bi bi-calendar"></i> Fecha de Nacimiento
+                        </th>
+                        <th>
+                            <i class="bi bi-gender-ambiguous"></i> Género
+                        </th>
+                        <th>
+                            <i class="bi bi-telephone"></i> Teléfono
+                        </th>
+                        <th>
+                            <i class="bi bi-envelope"></i> Correo
+                        </th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@Html.DisplayFor(modelItem => item.Nombre) @Html.DisplayFor(modelItem => item.Apellido)</strong>
+                            </td>
+                            <td>
+                                <code>@Html.DisplayFor(modelItem => item.Cedula)</code>
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.FechaNacimiento, "{0:dd/MM/yyyy}")
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Genero)
+                            </td>
+                            <td>
+                                <a href="tel:@item.Telefono">@Html.DisplayFor(modelItem => item.Telefono)</a>
+                            </td>
+                            <td>
+                                <a href="mailto:@item.CorreoElectronico">@Html.DisplayFor(modelItem => item.CorreoElectronico)</a>
+                            </td>
+                            <td class="text-center">
+                                @if (item.Activo)
+                                {
+                                    <span class="badge-status badge-activo">
+                                        <i class="bi bi-check-circle"></i> Activo
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-inactivo">
+                                        <i class="bi bi-x-circle"></i> Inactivo
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="action-buttons">
+                                    <a href="@Url.Action("Details", new { id = item.PacienteId })" class="btn btn-info btn-sm" title="Ver detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="@Url.Action("Edit", new { id = item.PacienteId })" class="btn btn-warning btn-sm" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -1,0 +1,170 @@
+@model SIGH_PracticaHospital.Models.Paciente
+
+@{
+    ViewData["Title"] = "Crear Nuevo Paciente";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1><i class="bi bi-person-plus"></i> Crear Nuevo Paciente</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/Pacientes">Pacientes</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Crear</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Información del Paciente</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Nombre" class="form-label">
+                                <i class="bi bi-person"></i> Nombre <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Nombre" class="form-control" placeholder="Ej: Juan" />
+                            <span asp-validation-for="Nombre" class="field-validation-error"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Apellido" class="form-label">
+                                <i class="bi bi-person"></i> Apellido <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Apellido" class="form-control" placeholder="Ej: Pérez" />
+                            <span asp-validation-for="Apellido" class="field-validation-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Cedula" class="form-label">
+                                <i class="bi bi-card-text"></i> Cédula <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Cedula" class="form-control" placeholder="Ej: 123456789" />
+                            <span asp-validation-for="Cedula" class="field-validation-error"></span>
+                            <small class="form-text">Identificación única del paciente</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="FechaNacimiento" class="form-label">
+                                <i class="bi bi-calendar"></i> Fecha de Nacimiento <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="FechaNacimiento" type="date" class="form-control" />
+                            <span asp-validation-for="FechaNacimiento" class="field-validation-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Genero" class="form-label">
+                                <i class="bi bi-gender-ambiguous"></i> Género <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Genero" class="form-select">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                            <span asp-validation-for="Genero" class="field-validation-error"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="GrupoSanguineo" class="form-label">
+                                <i class="bi bi-droplet"></i> Grupo Sanguíneo
+                            </label>
+                            <select asp-for="GrupoSanguineo" class="form-select">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                            <span asp-validation-for="GrupoSanguineo" class="field-validation-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Direccion" class="form-label">
+                            <i class="bi bi-geo-alt"></i> Dirección <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Direccion" class="form-control" placeholder="Calle Principal 123" />
+                        <span asp-validation-for="Direccion" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Telefono" class="form-label">
+                                <i class="bi bi-telephone"></i> Teléfono <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Telefono" type="tel" class="form-control" placeholder="+1234567890" />
+                            <span asp-validation-for="Telefono" class="field-validation-error"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CorreoElectronico" class="form-label">
+                                <i class="bi bi-envelope"></i> Correo Electrónico <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="CorreoElectronico" type="email" class="form-control" placeholder="correo@ejemplo.com" />
+                            <span asp-validation-for="CorreoElectronico" class="field-validation-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="Activo" type="checkbox" class="form-check-input" id="activoCheck" />
+                            <label class="form-check-label" for="activoCheck">
+                                <i class="bi bi-check-circle"></i> Paciente Activo
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/Pacientes" class="btn btn-secondary btn-action">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success btn-action">
+                            <i class="bi bi-save"></i> Guardar Paciente
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card bg-light">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Información</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Campos requeridos:</strong> Los campos marcados con <span class="text-danger">*</span> son obligatorios.</p>
+                <hr />
+                <p><strong>Cédula:</strong> Debe ser única en el sistema. No puede haber dos pacientes con la misma cédula.</p>
+                <hr />
+                <p><strong>Teléfono:</strong> Se aceptan números internacionales con formato +XXXXXXXXXX.</p>
+                <hr />
+                <p><strong>Correo:</strong> Debe ser una dirección de correo válida.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,201 @@
+@model SIGH_PracticaHospital.Models.Paciente
+
+@{
+    ViewData["Title"] = "Detalles del Paciente";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1><i class="bi bi-person-badge"></i> @Model.Nombre @Model.Apellido</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/Pacientes">Pacientes</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Detalles</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="@Url.Action("Edit", new { id = Model.PacienteId })" class="btn btn-warning btn-action">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            <a href="/Pacientes" class="btn btn-secondary btn-action">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-vcard"></i> Información Personal</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="text-muted">Nombre Completo</p>
+                        <h6>@Html.DisplayFor(modelItem => modelItem.Nombre) @Html.DisplayFor(modelItem => modelItem.Apellido)</h6>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted">Cédula</p>
+                        <h6><code>@Html.DisplayFor(modelItem => modelItem.Cedula)</code></h6>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="text-muted">Fecha de Nacimiento</p>
+                        <h6>@Html.DisplayFor(modelItem => modelItem.FechaNacimiento, "{0:dd/MM/yyyy}")</h6>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted">Género</p>
+                        <h6>@Html.DisplayFor(modelItem => modelItem.Genero)</h6>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="text-muted">Grupo Sanguíneo</p>
+                        <h6>@(string.IsNullOrEmpty(Model.GrupoSanguineo) ? "No especificado" : Model.GrupoSanguineo)</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Información de Contacto</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <p class="text-muted">Dirección</p>
+                        <h6>@Html.DisplayFor(modelItem => modelItem.Direccion)</h6>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="text-muted">Teléfono</p>
+                        <h6><a href="tel:@Model.Telefono">@Html.DisplayFor(modelItem => modelItem.Telefono)</a></h6>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted">Correo Electrónico</p>
+                        <h6><a href="mailto:@Model.CorreoElectronico">@Html.DisplayFor(modelItem => modelItem.CorreoElectronico)</a></h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Citas.Any())
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Citas Programadas (@Model.Citas.Count())</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Médico</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cita in Model.Citas.OrderByDescending(c => c.FechaCita).Take(5))
+                            {
+                                <tr>
+                                    <td>@cita.FechaCita.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@cita.Medico.Nombre @cita.Medico.Apellido</td>
+                                    <td><span class="badge bg-primary">@cita.Estado</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        @if (Model.Diagnosticos.Any())
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-stethoscope"></i> Diagnósticos Registrados (@Model.Diagnosticos.Count())</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Descripción</th>
+                                <th>Severidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var diagnostico in Model.Diagnosticos.OrderByDescending(d => d.FechaDiagnostico).Take(5))
+                            {
+                                <tr>
+                                    <td>@diagnostico.FechaDiagnostico.ToString("dd/MM/yyyy")</td>
+                                    <td>@diagnostico.Descripcion</td>
+                                    <td>
+                                        @if (diagnostico.Severidad == "Severa")
+                                        {
+                                            <span class="badge bg-danger">@diagnostico.Severidad</span>
+                                        }
+                                        else if (diagnostico.Severidad == "Moderada")
+                                        {
+                                            <span class="badge bg-warning">@diagnostico.Severidad</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">@diagnostico.Severidad</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card bg-light mb-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-check-circle"></i> Estado</h5>
+            </div>
+            <div class="card-body text-center">
+                @if (Model.Activo)
+                {
+                    <span class="badge-status badge-activo" style="font-size: 1.2rem;">
+                        <i class="bi bi-check-circle"></i> Activo
+                    </span>
+                }
+                else
+                {
+                    <span class="badge-status badge-inactivo" style="font-size: 1.2rem;">
+                        <i class="bi bi-x-circle"></i> Inactivo
+                    </span>
+                }
+            </div>
+        </div>
+
+        <div class="card bg-light">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Información del Sistema</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>ID del Paciente:</strong></p>
+                <p><code>@Model.PacienteId</code></p>
+                <hr />
+                <p><strong>Fecha de Registro:</strong></p>
+                <p>@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm:ss")</p>
+            </div>
+        </div>
+    </div>
+</div>

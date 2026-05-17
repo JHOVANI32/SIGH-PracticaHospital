@@ -1,0 +1,138 @@
+@model SIGH_PracticaHospital.Models.Medico
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Crear Nuevo Médico";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1><i class="bi bi-person-plus"></i> Crear Nuevo Médico</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="/Medicos">Médicos</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Crear</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Información del Médico</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Nombre" class="form-label">
+                                <i class="bi bi-person"></i> Nombre <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Nombre" class="form-control" placeholder="Ej: Juan" />
+                            <span asp-validation-for="Nombre" class="field-validation-error"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Apellido" class="form-label">
+                                <i class="bi bi-person"></i> Apellido <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Apellido" class="form-control" placeholder="Ej: Pérez" />
+                            <span asp-validation-for="Apellido" class="field-validation-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CedulaProfesional" class="form-label">
+                                <i class="bi bi-card-text"></i> Cédula Profesional <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="CedulaProfesional" class="form-control" placeholder="Ej: MP001" />
+                            <span asp-validation-for="CedulaProfesional" class="field-validation-error"></span>
+                            <small class="form-text">Identificación única del médico</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="EspecialidadId" class="form-label">
+                                <i class="bi bi-briefcase"></i> Especialidad <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="EspecialidadId" asp-items="ViewBag.EspecialidadId" class="form-select"></select>
+                            <span asp-validation-for="EspecialidadId" class="field-validation-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NumeroConsultorio" class="form-label">
+                                <i class="bi bi-door-closed"></i> Número de Consultorio <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="NumeroConsultorio" class="form-control" placeholder="Ej: 101" />
+                            <span asp-validation-for="NumeroConsultorio" class="field-validation-error"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Telefono" class="form-label">
+                                <i class="bi bi-telephone"></i> Teléfono <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Telefono" type="tel" class="form-control" placeholder="+1234567890" />
+                            <span asp-validation-for="Telefono" class="field-validation-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CorreoElectronico" class="form-label">
+                            <i class="bi bi-envelope"></i> Correo Electrónico <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="CorreoElectronico" type="email" class="form-control" placeholder="correo@hospital.com" />
+                        <span asp-validation-for="CorreoElectronico" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="Activo" type="checkbox" class="form-check-input" id="activoCheck" />
+                            <label class="form-check-label" for="activoCheck">
+                                <i class="bi bi-check-circle"></i> Médico Activo
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/Medicos" class="btn btn-secondary btn-action">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success btn-action">
+                            <i class="bi bi-save"></i> Guardar Médico
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card bg-light">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Información</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Campos requeridos:</strong> Los campos marcados con <span class="text-danger">*</span> son obligatorios.</p>
+                <hr />
+                <p><strong>Especialidad:</strong> Seleccione la especialidad médica del profesional.</p>
+                <hr />
+                <p><strong>Cédula Profesional:</strong> Debe ser única en el sistema. No puede haber dos médicos con la misma cédula.</p>
+                <hr />
+                <p><strong>Consultorio:</strong> Número de la ubicación de trabajo del médico dentro del hospital.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
